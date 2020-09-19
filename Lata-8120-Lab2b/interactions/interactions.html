@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<title>Rotating Colored Square</title>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+attribute vec4 vPosition;
+attribute vec4 vColor;
+
+			// varying qualifier to send to fragment shader
+varying vec4 fColor;
+
+void main() {
+    gl_Position.x = vPosition.x;
+    gl_Position.y = vPosition.y;
+    gl_Position.z = 0.0;
+    gl_Position.w = 1.0;
+
+	fColor = vColor;
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+
+precision mediump float;
+
+			// vertex color coming from vertex shader
+varying vec4 fColor;
+
+void main() {
+    gl_FragColor = fColor;
+}
+</script>
+
+<script type="text/javascript" src="./webgl-utils.js"></script>
+<script type="text/javascript" src="./initShaders.js"></script>
+<script type="text/javascript" src="./MV.js"></script>
+<script type="text/javascript" src="interactions.js"></script>
+</head>   
+
+<body>
+<canvas id="gl-canvas" width="512" height="512">
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+<!-- <style type="text/css">
+    select {
+        width: 200px;
+        margin: 20px;
+    }
+    select:focus {
+        min-width: 200px;
+        width: auto;
+    }    
+</style>
+-->
+<select id="PrimitiveTypes" size="5" >
+    <option value="0">Triangles</option> 
+    <option value="1">Triangle Strip</option> 
+    <option value="2">Triangle Fan</option> 
+    <option value="3">Axes</option> 
+    <option value="4">Squares</option> 
+</select>
+<p>
+<textarea id = "myTextArea" rows = "3" cols = "40"> 
+</textarea>
+</p>
+</body>
+<ingSquare2/html>
