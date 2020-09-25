@@ -221,7 +221,7 @@ function setEventHandlers() {
 			//updateVertices(program);
 		}
 		else{
-			//lissajous();
+			lissajous();
 		}
 	}
 }

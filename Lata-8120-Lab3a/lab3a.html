@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<title>Rotating Square</title>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+attribute vec4 vPosition;
+attribute vec4 vColor;
+
+uniform vec4  vertColor;
+uniform mat4  M_Transform;
+
+// varying type variable to share with fragment shader, as the color
+// will be sent to the fragment shader
+varying vec4 fColor;
+
+void main() {
+	gl_Position = M_Transform * vPosition;
+
+	fColor = vertColor;
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+
+precision mediump float;
+
+// vertex color coming from vertex shader
+varying vec4 fColor;
+
+void main() {
+    gl_FragColor = fColor;
+}
+
+</script>
+
+<script type="text/javascript" src="../../../Common_Files/webgl-utils.js"></script>
+<script type="text/javascript" src="../../../Common_Files/initShaders.js"></script>
+<script type="text/javascript" src="../../../Common_Files/MV.js"></script>
+<script type="text/javascript" src="./matrix.js"></script>
+<script type="text/javascript" src="./lab3a.js"></script>
+</head>   
+
+<body>
+<select id="Transformations" size="3">
+    <option value="0">Translation</option>
+    <option value="1">Rotation</option>
+    <option value="2">Scale</option>
+</select>
+
+<canvas id="gl-canvas" width="512" height="512">
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+</body>
+</html>
