@@ -18,13 +18,26 @@ function translate(x,y){
 	)
 }
 
-function rotate(theta){
-	return mat4(
-		vec4(Math.cos(theta), -Math.sin(theta), 0., 0.),
-		vec4(Math.sin(theta), Math.cos(theta), 0., 0.),
+function rotate(thetax, thetay, thetaz){
+	var z = mat4(
+		vec4(Math.cos(thetaz), -Math.sin(thetaz), 0., 0.),
+		vec4(Math.sin(thetaz), Math.cos(thetaz), 0., 0.),
 		vec4(0., 0., 1., 0.),
 		vec4(0., 0., 0., 1.)
 	)
+	var y = mat4(
+		vec4(Math.cos(thetay), 0, Math.sin(thetay), 0.),
+		vec4(0, 1, 0., 0.),
+		vec4(-Math.sin(thetay), 0., Math.cos(thetay), 0.),
+		vec4(0., 0., 0., 1.)
+	)
+	var x = mat4(
+		vec4(1, 0, 0., 0.),
+		vec4(0, Math.cos(thetax), -Math.sin(thetax), 0.),
+		vec4(0., Math.sin(thetax), Math.cos(thetax), 0.),
+		vec4(0., 0., 0., 1.)
+	)
+	return mult(z,mult(y,x));
 }
 
 function scale(x) {

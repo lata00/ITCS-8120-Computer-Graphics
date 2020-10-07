@@ -27,18 +27,11 @@ function rotate(theta){
 	)
 }
 
-function scale(x) {
+function scale(x,y) {
 	return mat4(
 		vec4(x, 0., 0., 0.),
-		vec4(0., x, 0., 0.),
-		vec4(0., 0., x, 0.),
-		vec4(0., 0., 0., 1.)	);
-}
-
-function scalex(x) {
-	return mat4(
-		vec4(x, 0., 0., 0.),
-		vec4(0., 1, 0., 0.),
+		vec4(0., y, 0., 0.),
 		vec4(0., 0., 1, 0.),
-		vec4(0., 0., 0., 1.)	);
+		vec4(0., 0., 0., 1.)
+	);
 }

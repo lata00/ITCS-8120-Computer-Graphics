@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <link rel="stylesheet" href="styles.css">
-</head>
+
 <title>Rotating Square</title>
 
 <script id="vertex-shader" type="x-shader/x-vertex">
@@ -11,14 +9,14 @@ attribute vec4 vColor;
 
 uniform vec4  vertColor;
 uniform mat4  M_Transform;
-uniform mat4  Aspect;
+uniform mat4  M_wv;  
 
 // varying type variable to share with fragment shader, as the color
 // will be sent to the fragment shader
 varying vec4 fColor;
 
 void main() {
-	gl_Position = Aspect*M_Transform * vPosition;
+	gl_Position = M_wv * M_Transform  * vPosition;
 
 	fColor = vertColor;
 }
@@ -41,7 +39,7 @@ void main() {
 <script type="text/javascript" src="../Common_Files/initShaders.js"></script>
 <script type="text/javascript" src="../Common_Files/MV.js"></script>
 <script type="text/javascript" src="./matrix.js"></script>
-<script type="text/javascript" src="./lab3a.js"></script>
+<script type="text/javascript" src="./lab3b.js"></script>
 </head>   
 
 <body>
@@ -51,9 +49,8 @@ void main() {
     <option value="2">Scale</option>
 </select>
 
-<canvas id="gl-canvas">
+<canvas id="gl-canvas" width="512" height="512">
 Oops ... your browser doesn't support the HTML5 canvas element
-
 </canvas>
 
 <form>
@@ -65,7 +62,7 @@ Oops ... your browser doesn't support the HTML5 canvas element
     <input type="text" id="ymin" name="ymin" value=""><br>
     <label for="ymax">World Coord [Y Max]:</label><br>
     <input type="text" id="ymax" name="ymax" value=""><br>
-    <input type="submit" value="Submit" id = "submit">
+    <button type="button" value="Submit" id="submit">Submit</button>
 </form> 
 
 </body>
