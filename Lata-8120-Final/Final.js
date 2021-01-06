@@ -252,7 +252,8 @@ function generateLines(t,l,C){
 
 function generateSparkle(n,l){
 	for (i=0;i<n;i++){
-		generateLines(i*l,l,[Math.random(),Math.random(),Math.random()]);
+		cc = [1,1,1,1];
+		generateLines(i*l,l,cc);
 	}
 }
 
@@ -301,7 +302,7 @@ function render() {
 	}
 	else
 	{
-		generateLines(j*l,l,[Math.random(),Math.random(),Math.random()]);
+		generateLines(j*l,l,[Math.random(),Math.random(),Math.random(),1]);
 		j++
 	}
 	updateVertices(lineVertices,lineColors,[])
@@ -318,6 +319,6 @@ function render() {
 	drawScene2(M_ortho, M_persp, M_camera, M_model,boxIndices.length)
 
     setTimeout(
-        function (){requestAnimFrame(render());}, delay
+        function (){requestAnimationFrame(render);}, delay
 	);
 }
