@@ -51,7 +51,7 @@ function subVertices(x,y,z,size){
 		vec3(-size+x,-size+y,size+z),
 		vec3(-size+x,size+y,size+z),
 		vec3(size+x,size+y,size+z),
-		vec3(size+x,-size-y,size+z),
+		vec3(size+x,-size+y,size+z),
 		vec3(-size+x,-size+y,-size+z),
 		vec3(-size+x,size+y,-size+z),
 		vec3(size+x,size+y,-size+z),
