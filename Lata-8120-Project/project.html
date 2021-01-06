@@ -17,7 +17,7 @@ varying vec4 fColor;
 
 void main() {
 	gl_Position =  M * vPosition;
-
+    gl_PointSize = 20.0;
 	fColor = vColor;
 }
 </script>
@@ -39,7 +39,7 @@ void main() {
 <script type="text/javascript" src="../Common_Files/initShaders.js"></script>
 <script type="text/javascript" src="../Common_Files/MV.js"></script>
 <script type="text/javascript" src="./matrix.js"></script>
-<script type="text/javascript" src="./lab4a.js"></script>
+<script type="text/javascript" src="./project.js"></script>
 </head>   
 
 <body>

@@ -1,3 +1,4 @@
+
 //////////////////////////////////////////////////////////////////////////////
 //
 //  Angel.js
@@ -482,4 +483,94 @@ function flatten( v )
     }
 
     return floats;
+}
+//
+//  ModelView Matrix Generators
+//
+
+function lookAt( eye, at, up )
+{
+    var lat = subtract(at,eye);
+    up = normalize(up);
+    var n = normalize(negate(lat));  
+    var u = normalize(cross(lat,up));      
+    var v = normalize(cross(u, lat));        
+
+    var result = mat4(
+        vec4( u, -dot(u, eye) ),
+        vec4( v, -dot(v, eye) ),
+        vec4( n, -dot(n, eye) ),
+        vec4()
+    );
+
+    return result;
+}
+//
+//  Projection Matrix Generators
+//
+
+function ortho( left, right, bottom, top, near, far )
+{
+    var w = right - left;
+    var h = top - bottom;
+    var d = far - near;
+
+    var result = mat4();
+    result[0][0] = 2.0 / w;
+    result[1][1] = 2.0 / h;
+    result[2][2] = -2.0 / d;
+    result[0][3] = -(left + right) / w;
+    result[1][3] = -(top + bottom) / h;
+    result[2][3] = -(near + far) / d;
+
+    return result;
+}
+//----------------------------------------------------------------------------
+
+function perspective( fovy, aspect, near, far )
+{
+    var f = 1.0 / Math.tan( radians(fovy) / 2 );
+    var d = far - near;
+
+    var result = mat4();
+    result[0][0] = f / aspect;
+    result[1][1] = f;
+    result[2][2] = -(near + far) / d;
+    result[2][3] = -2 * near * far / d;
+    result[3][2] = -1;
+    result[3][3] = 0.0;
+
+    return result;
+}
+
+function perspective2( right, top, near, far)
+{
+    var d = far - near;
+
+    var result = mat4();
+    result[0][0] = near/right;
+    result[1][1] = near/top;
+    result[2][2] = -(near + far) / d;
+    result[2][3] = -2 * near * far / d;
+    result[3][2] = -1;
+    result[3][3] = 0;
+
+    return result;
+}
+
+function average3(u,v){
+    var w = [];
+    w[0] = (u[0]+v[0])/2;
+    w[1] = (u[1]+v[1])/2;
+    w[2] = (u[2]+v[2])/2;
+    return w
+}
+
+function average4(u,v,c){
+    var w = [];
+    w[0] = (u[0]+c*v[0])/2;
+    w[1] = (u[1]+c*v[1])/2;
+    w[2] = (u[2]+c*v[2])/2;
+    w[3] = 1;
+    return w
 }

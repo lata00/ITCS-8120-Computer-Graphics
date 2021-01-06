@@ -1,7 +1,7 @@
 
 // some globals
 var gl;
-var colorLoc, M_Loc, scaleLoc, transLoc;
+var colorLoc, Mm_Loc, Mc_Loc, Mo_Loc;
 var delay = 16;
 var vBuffer, cBuffer, vColor, iBuffer;
 var program;
@@ -11,7 +11,9 @@ var vertexColors = [];
 var vertices = [];
 var indices = [];
 var numVertices;
-var M;
+var M_model;
+var M_camera;
+var M_ortho;
 var xangle;
 var yangle;
 var zangle;
@@ -19,7 +21,18 @@ var spin = 0;
 var vx;
 var vy;
 var vz;
-
+var r = 1;
+var theta = -45;
+var phi = 0;
+var psiz = 0;
+var psiy = 0;
+var eye;
+var at = vec3(0,0,0);
+var up;
+var cyspin = 0;
+var czspin = 0;
+var camRotz;
+var camRoty;
 
 window.onload = function init() {
 	// get the canvas handle from the document's DOM
@@ -53,7 +66,9 @@ window.onload = function init() {
 	colorLoc = gl.getUniformLocation(program, "vertColor");
 
 	// transformation matrix location
-	M_Loc = gl.getUniformLocation( program, "M" );
+	Mm_Loc = gl.getUniformLocation( program, "M_model" );
+	Mc_Loc = gl.getUniformLocation( program, "M_camera" );
+	Mo_Loc = gl.getUniformLocation( program, "M_ortho" );
 
 	// set an initial color for all vertices
 	//gl.uniform4fv (colorLoc, [1., .5, 1., 1.])
@@ -72,35 +87,16 @@ window.onload = function init() {
 
 	//Build Cube
 	initVertices();
-	//First Face
-	subVertices(0,0,-.451);
-	//Second Face
-	subVertices(-.2,-.2,.451);
-	subVertices(.2,.2,.451);
-	//Third Face
-	subVertices(.451,.25,.25);
-	subVertices(.451,-.25,-.25);
-	subVertices(.451,0,0);
-	//Fourth Face
-	subVertices(-.451,.25,.25);
-	subVertices(-.451,-.25,-.25);
-	subVertices(-.451,.25,-.25);
-	subVertices(-.451,-.25,.25);
-	//Fifth Face
-	subVertices(.25,-.451,.25);
-	subVertices(-.25,-.451,-.25);
-	subVertices(.25,-.451,-.25);
-	subVertices(-.25,-.451,.25);
-	subVertices(0,-.451,0);
-	//Sixth Face
-	subVertices(.25,.451,.25);
-	subVertices(-.25,.451,-.25);
-	subVertices(.25,.451,-.25);
-	subVertices(-.25,.451,.25);
-	subVertices(0,.451,.25);
-	subVertices(0,.451,-.25);
 
-	roll();
+	//Second Cube
+	subVertices(0,0,-.75,.15)
+	subVertices(0,0,.75,.15)
+	subVertices(.75,0,0,.15)
+	subVertices(-.75,0,0,.15)
+
+	xangle = 0*Math.round(Math.random()*4)*90;
+	yangle = 0*Math.round(Math.random()*4)*90;
+	zangle = 0*Math.round(Math.random()*4)*90;
 
 	gl.enable(gl.DEPTH_TEST);
 	gl.depthFunc(gl.LEQUAL)
@@ -120,20 +116,69 @@ function setEventHandlers() {
 	document.getElementById("spin").onclick = function(event) {
 		setSpin(spin);
 	};
+
+	document.getElementById("cyspin").onclick = function(event) {
+		setySpin(cyspin);
+	};
+
+	document.getElementById("czspin").onclick = function(event) {
+		setzSpin(czspin);
+	};
+
+	document.getElementById("reset").onclick = function(event) {
+		spin = 0;
+		vx;
+		vy;
+		vz;
+		r = 1;
+		theta = -45;
+		phi = 0;
+		psiz = 0;
+		psiy = 0;
+		eye;
+		at = vec3(0,0,0);
+		up;
+		cyspin = 0;
+		czspin = 0;
+		xangle = 0*Math.round(Math.random()*4)*90;
+		yangle = 0*Math.round(Math.random()*4)*90;
+		zangle = 0*Math.round(Math.random()*4)*90;
+		updateAngleDisplay();
+	};
 	document.getElementById("xangle").onchange = function(event){
-		xangle = document.getElementById("xangle").value*Math.PI/180;
-		yangle = document.getElementById("yangle").value*Math.PI/180;
-		zangle = document.getElementById("zangle").value*Math.PI/180;
+		xangle = document.getElementById("xangle").value;
+		yangle = document.getElementById("yangle").value;
+		zangle = document.getElementById("zangle").value;
+		phi   = document.getElementById("cyangle").value;
+		psiz  = document.getElementById("czangle").value;
 	};
 	document.getElementById("yangle").onchange = function(event){
-		xangle = document.getElementById("xangle").value*Math.PI/180;
-		yangle = document.getElementById("yangle").value*Math.PI/180;
-		zangle = document.getElementById("zangle").value*Math.PI/180;
+		xangle = document.getElementById("xangle").value;
+		yangle = document.getElementById("yangle").value;
+		zangle = document.getElementById("zangle").value;
+		phi   = document.getElementById("cyangle").value;
+		psiz  = document.getElementById("czangle").value;
 	};
 	document.getElementById("zangle").onchange = function(event){
-		xangle = document.getElementById("xangle").value*Math.PI/180;
-		yangle = document.getElementById("yangle").value*Math.PI/180;
-		zangle = document.getElementById("zangle").value*Math.PI/180;
+		xangle = document.getElementById("xangle").value;
+		yangle = document.getElementById("yangle").value;
+		zangle = document.getElementById("zangle").value;
+		phi   = document.getElementById("cyangle").value;
+		psiz  = document.getElementById("czangle").value;
+	};
+	document.getElementById("cyangle").onchange = function(event){
+		xangle = document.getElementById("xangle").value;
+		yangle = document.getElementById("yangle").value;
+		zangle = document.getElementById("zangle").value;
+		phi   = document.getElementById("cyangle").value;
+		psiz  = document.getElementById("czangle").value;
+	};
+	document.getElementById("czangle").onchange = function(event){
+		xangle = document.getElementById("xangle").value;
+		yangle = document.getElementById("yangle").value;
+		zangle = document.getElementById("zangle").value;
+		phi   = document.getElementById("cyangle").value;
+		psiz  = document.getElementById("czangle").value;
 	};
 };
 function initVertices(){
@@ -180,19 +225,19 @@ function initVertices(){
 									]
 }
 
-function subVertices(x,y,z){
+function subVertices(x,y,z,size){
 
 	var n = vertices.length;
 
 	vertices.push(
-		vec3(.05+x,-.05+y,.05+z),
-		vec3(.05+x,.05+y,.05+z),
-		vec3(-.05+x,.05+y,.05+z),
-		vec3(-.05+x,-.05+y,.05+z),
-		vec3(.05+x,-.05+y,-.05+z),
-		vec3(.05+x,.05+y,-.05+z),
-		vec3(-.05+x,.05+y,-.05+z),
-		vec3(-.05+x,-.05+y,-.05+z)
+		vec3(size+x,-size+y,size+z),
+		vec3(size+x,size+y,size+z),
+		vec3(-size+x,size+y,size+z),
+		vec3(-size+x,-size+y,size+z),
+		vec3(size+x,-size+y,-size+z),
+		vec3(size+x,size+y,-size+z),
+		vec3(-size+x,size+y,-size+z),
+		vec3(-size+x,-size+y,-size+z)
 	);
 
 	indices.push(
@@ -244,10 +289,32 @@ function setSpin(s) {
 	vz = Math.random();
 }
 
+function setySpin(s) {
+	if (s==0){
+		cyspin = 1;
+	}
+
+	if (s==1){
+		cyspin = 0;
+	}
+}
+
+function setzSpin(s) {
+	if (s==0){
+		czspin = 1;
+	}
+
+	if (s==1){
+		czspin = 0;
+	}
+}
+
 function updateAngleDisplay() {
 	document.getElementById("xangle").value = Math.round(xangle%360);
 	document.getElementById("yangle").value = Math.round(yangle%360);
 	document.getElementById("zangle").value = Math.round(zangle%360);
+	document.getElementById("cyangle").value = Math.round(phi%360);
+	document.getElementById("czangle").value = Math.round(psiz%360);
 }
 
 function updateVertices() {
@@ -303,10 +370,39 @@ function render() {
 		xangle += vx;
 		yangle += vy;
 		zangle += 0;
-		updateAngleDisplay();
 	};
-	M = rotate(xangle*Math.PI/180,yangle*Math.PI/180,zangle*Math.PI/180);
-	gl.uniformMatrix4fv(M_Loc, false, flatten(M));
+	if (cyspin==1){
+		phi += 1;
+		updateAngleDisplay();
+	}
+	if (czspin==1){
+		psiz += 1;
+		updateAngleDisplay();
+	}
+	phir = phi*Math.PI/180;
+	psizr = psiz*Math.PI/180;
+	thetar = theta*Math.PI/180;
+	eye = 	vec3(r*Math.sin(thetar)*Math.cos(phir),
+				 r*Math.cos(thetar),
+				 r*Math.sin(thetar)*Math.sin(phir));
+	eyehat = normalize(eye);
+	up = 	vec3(Math.cos(thetar)*Math.cos(phir),
+				-Math.sin(thetar),
+				 Math.cos(thetar)*Math.sin(phir));
+	camRotz = rotate(0,0,psizr);
+	//camRoty = translate(eye[0],eye[1],eye[2]);
+	//camRoty = mult(rotate(0,theta,phi),camRoty);
+	//camRoty = mult(rotate(0,psiy,0),camRoty);
+	//camRoty = mult(rotate(0,-theta,-phi),camRoty);
+	//camRoty = mult(translate(-eye[0],-eye[1],-eye[2]),camRoty);
+	M_model = rotate(xangle*Math.PI/180,yangle*Math.PI/180,zangle*Math.PI/180);
+	M_camera = mult(camRotz,lookAt(eye,at,up));
+	//M_camera = mult(camRotz,M_camera);
+	M_ortho = ortho(-1,1,-1,1,-2,2);
+	//updateAngleDisplay();
+	gl.uniformMatrix4fv(Mm_Loc, false, flatten(M_model));
+	gl.uniformMatrix4fv(Mc_Loc, false, flatten(M_camera));
+	gl.uniformMatrix4fv(Mo_Loc, false, flatten(M_ortho));
 	gl.uniform4fv(colorLoc, flatten(vertexColors))
 	numVertices = indices.length;
 

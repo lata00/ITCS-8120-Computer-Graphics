@@ -19,7 +19,9 @@ var spin = 0;
 var vx;
 var vy;
 var vz;
-
+var spokes = 12;
+var phi = 0;
+var phidir = 1;
 
 window.onload = function init() {
 	// get the canvas handle from the document's DOM
@@ -37,7 +39,7 @@ window.onload = function init() {
 	
 	// clear the display with a background color 
 	// specified as R,G,B triplet in 0-1.0 range
-	gl.clearColor(.66, 1, 1, 1);
+	gl.clearColor(.25,.25,.25,1);
 	
     //  Load shaders -- all work done in init_shaders.js
 	program = initShaders( gl, "vertex-shader", "fragment-shader" );
@@ -71,34 +73,7 @@ window.onload = function init() {
 	setEventHandlers();
 
 	//Build Cube
-	initVertices();
-	//First Face
-	subVertices(0,0,-.451);
-	//Second Face
-	subVertices(-.2,-.2,.451);
-	subVertices(.2,.2,.451);
-	//Third Face
-	subVertices(.451,.25,.25);
-	subVertices(.451,-.25,-.25);
-	subVertices(.451,0,0);
-	//Fourth Face
-	subVertices(-.451,.25,.25);
-	subVertices(-.451,-.25,-.25);
-	subVertices(-.451,.25,-.25);
-	subVertices(-.451,-.25,.25);
-	//Fifth Face
-	subVertices(.25,-.451,.25);
-	subVertices(-.25,-.451,-.25);
-	subVertices(.25,-.451,-.25);
-	subVertices(-.25,-.451,.25);
-	subVertices(0,-.451,0);
-	//Sixth Face
-	subVertices(.25,.451,.25);
-	subVertices(-.25,.451,-.25);
-	subVertices(.25,.451,-.25);
-	subVertices(-.25,.451,.25);
-	subVertices(0,.451,.25);
-	subVertices(0,.451,-.25);
+	//buildWheel(spokes,.75);
 
 	roll();
 
@@ -121,112 +96,97 @@ function setEventHandlers() {
 		setSpin(spin);
 	};
 	document.getElementById("xangle").onchange = function(event){
-		xangle = document.getElementById("xangle").value*Math.PI/180;
-		yangle = document.getElementById("yangle").value*Math.PI/180;
-		zangle = document.getElementById("zangle").value*Math.PI/180;
+		xangle = document.getElementById("xangle").value;
+		yangle = document.getElementById("yangle").value;
+		zangle = document.getElementById("zangle").value;
 	};
 	document.getElementById("yangle").onchange = function(event){
-		xangle = document.getElementById("xangle").value*Math.PI/180;
-		yangle = document.getElementById("yangle").value*Math.PI/180;
-		zangle = document.getElementById("zangle").value*Math.PI/180;
+		xangle = document.getElementById("xangle").value;
+		yangle = document.getElementById("yangle").value;
+		zangle = document.getElementById("zangle").value;
 	};
 	document.getElementById("zangle").onchange = function(event){
-		xangle = document.getElementById("xangle").value*Math.PI/180;
-		yangle = document.getElementById("yangle").value*Math.PI/180;
-		zangle = document.getElementById("zangle").value*Math.PI/180;
+		xangle = document.getElementById("xangle").value;
+		yangle = document.getElementById("yangle").value;
+		zangle = document.getElementById("zangle").value;
 	};
 };
-function initVertices(){
-	vertices = 
-	[
-		vec3(-.5,-.5,.5), 	//0
-		vec3(-.5,.5,.5),  	//1
-		vec3(.5,.5,.5),   	//2
-		vec3(.5,-.5,.5),  	//3
-		vec3(-.5,-.5,-.5),	//4
-		vec3(-.5,.5,-.5), 	//5
-		vec3(.5,.5,-.5),  	//6
-		vec3(.5,-.5,-.5)	//7
-							];
 
-	indices = 
-	[
-		1, 0, 3,
-		3, 2, 1,
-		2, 3, 7,
-		7, 6, 2,
-		3, 0, 4,
-		4, 7, 3,
-		6, 5, 1,
-		1, 2, 6,
-		4, 5, 6,
-		6, 7, 4,
-		5, 4, 0,
-		0, 1, 5
-					];
+function buildWheel(n,r,zangle,phi) {
+	vertices = [];
+	indices = [];
+	vertexColors = [];
+	vertices.push([0,0,0]);
+	vertexColors.push([1,1,0,1]);
+	dT = Math.PI*2/n;
+	var cos = Math.cos(zangle*Math.PI/180);
+	var sin = Math.sin(zangle*Math.PI/180);
+	i=0;
+	for (T = 0; T < Math.PI*2; T+=dT) {
+		x = r*Math.cos(T);
+		y = r*Math.sin(T);
+		vertices.push([x*cos - y*sin,x*sin + y*cos,0]);
+		vertexColors.push([1,0,0,1]);
+		i+=1;
+		indices.push(0,i);
 
-	numVertices = indices.length;
+		if(i<n){
+			indices.push(i,i+1);
+		}
 
-	vertexColors = 
-	[
-		[0,0,1,.9], // Blue
-		[0,1,0,.9], // Green
-		[1,0,0,.9], // Red
-		[1,1,0,.9], // Yellow
-		[1,0,0,.9], // Red
-		[1,1,0,.9], // white
-		[0,0,1,.9], // Blue
-		[0,1,0,.9], // Green
-									]
+		if(i==n){
+			indices.push(1,i);
+		}
+	  }	
+	  for (T = 0; T < Math.PI*2; T+=dT) {
+		x = r*Math.cos(T);
+		y = r*Math.sin(T);
+		xx = x*cos - y*sin
+		yy = x*sin + y*cos
+
+		buildChair(.25*r,xx,yy,phi);
+	  }	
 }
 
-function subVertices(x,y,z){
-
+function buildChair(a,x,y,phi) {
 	var n = vertices.length;
+	c = Math.cos(phi);
+	s = Math.sin(phi);
+	vertices.push([c*a*.25+x,s*a*.25+y,a*.25]); 		//0
+	vertices.push([c*-a*.25+x,s*-a*.25+y,a*.25]); 		//1
+	vertices.push([c*-a*.25+x,s*-a*.25+y,-a*.25]);		//2
+	vertices.push([c*a*.25+x,s*a*.25+y,-a*.25]); 		//3
+	vertices.push([(c*a*0.25-s*a*.5)+x,(s*a*0.25+c*a*.5)+y,a*.25]);		//4
+	vertices.push([(c*a*0.25-s*a*.5)+x,(s*a*0.25+c*a*.5)+y,-a*.25]);		//5
+	vertices.push([-(c*a*0.25-s*a*.5)+x,-(s*a*0.25+c*a*.5)+y,a*.25]);		//4
+	vertices.push([-(c*a*0.25-s*a*.5)+x,-(s*a*0.25+c*a*.5)+y,-a*.25]);
 
-	vertices.push(
-		vec3(.05+x,-.05+y,.05+z),
-		vec3(.05+x,.05+y,.05+z),
-		vec3(-.05+x,.05+y,.05+z),
-		vec3(-.05+x,-.05+y,.05+z),
-		vec3(.05+x,-.05+y,-.05+z),
-		vec3(.05+x,.05+y,-.05+z),
-		vec3(-.05+x,.05+y,-.05+z),
-		vec3(-.05+x,-.05+y,-.05+z)
-	);
+	vertexColors.push([0,1,0.25,1]);
+	vertexColors.push([0,1,0.25,1]);
+	vertexColors.push([0,1,0.25,1]);
+	vertexColors.push([0,1,0.25,1]);
+	vertexColors.push([0,1,0.25,1]);
+	vertexColors.push([0,1,0.25,1]);
+	vertexColors.push([0,1,0.25,1]);
+	vertexColors.push([0,1,0.25,1]);
 
-	indices.push(
-		1+n, 0+n, 3+n,
-		3+n, 2+n, 1+n,
-		2+n, 3+n, 7+n,
-		7+n, 6+n, 2+n,
-		3+n, 0+n, 4+n,
-		4+n, 7+n, 3+n,
-		6+n, 5+n, 1+n,
-		1+n, 2+n, 6+n,
-		4+n, 5+n, 6+n,
-		6+n, 7+n, 4+n,
-		5+n, 4+n, 0+n,
-		0+n, 1+n, 5+n
-	);
-
-	vertexColors.push(
-		[0,0,0,1],
-		[0,0,0,1],
-		[0,0,0,1],
-		[0,0,0,1],
-		[0,0,0,1],
-		[0,0,0,1],
-		[0,0,0,1],
-		[0,0,0,1]
-	);
+	indices.push(0+n,1+n);
+	indices.push(1+n,2+n);
+	indices.push(2+n,3+n);
+	indices.push(3+n,0+n);
+	indices.push(3+n,5+n);
+	indices.push(5+n,4+n);
+	indices.push(4+n,0+n);
+	indices.push(1+n,6+n);
+	indices.push(6+n,7+n);
+	indices.push(7+n,2+n);
 }
 
 function roll(){
 	spin = 0;
-	xangle = Math.round(Math.random()*4)*90;
-	yangle = Math.round(Math.random()*4)*90;
-	zangle = Math.round(Math.random()*4)*90;
+	xangle = 0;
+	yangle = 0;
+	zangle = 0;
 	updateAngleDisplay();
 }
 
@@ -292,26 +252,43 @@ function updateVertices() {
 
 function render() {
 	// this is render loop
-
+	buildWheel(spokes,.75,zangle,phi);
 	// clear the display with the background color
     gl.clear( gl.COLOR_BUFFER_BIT );
 
-	// adds a square to the vertex list (2 triangles, consisting of 3 vertices
-	// each
 	updateVertices();
+	
 	if (spin==1){
-		xangle += vx;
-		yangle += vy;
-		zangle += 0;
+		xangle += 0;
+		yangle += 0;
+		zangle += .5;
 		updateAngleDisplay();
 	};
-	M = rotate(xangle*Math.PI/180,yangle*Math.PI/180,zangle*Math.PI/180);
-	gl.uniformMatrix4fv(M_Loc, false, flatten(M));
-	gl.uniform4fv(colorLoc, flatten(vertexColors))
-	numVertices = indices.length;
 
-	// draw the square as a triangle
-	gl.drawElements(gl.TRIANGLES, numVertices, gl.UNSIGNED_BYTE, 0);	
+	numVertices = vertices.length;
+	numIndices = indices.length;
+
+	M = identity();
+	gl.uniformMatrix4fv(M_Loc, false, flatten(M));
+	gl.drawArrays(gl.POINTS, 0 , 1);
+	gl.drawElements(gl.LINES, numIndices, gl.UNSIGNED_BYTE, 0);
+
+	switch (phidir) {
+		case 1:
+			phi += .005;
+			break;
+		case 0:
+			phi -= .005;
+			break;
+	}
+
+
+	if (phi > .2) {
+		phidir = 0;
+	}
+	if (phi < -.3){
+		phidir = 1;
+	}
 
     setTimeout(
         function (){requestAnimFrame(render);}, delay

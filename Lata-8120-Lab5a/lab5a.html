@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<title>Rotating Square</title>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+attribute vec4 vPosition;
+attribute vec4 vNormal;
+attribute vec4 vColor;
+varying vec4 fColor;
+uniform vec4 ambientProduct, diffuseProduct, specularProduct;
+uniform mat4  M_model;
+uniform mat4  M_camera;
+uniform mat4  M_persp;
+uniform mat4  M_ortho;
+uniform vec4 lightPosition;
+uniform vec4 lightPosition2;
+uniform float shininess;
+void main()
+{
+    vec3 pos = -( M_model * vPosition).xyz;
+    vec3 light = lightPosition.xyz;
+    vec3 L = normalize(light - pos);
+    vec3 E = normalize(-pos);
+    vec3 H = normalize(L + E);
+    vec3 light2 = lightPosition2.xyz;
+    vec3 L2 = normalize(light2 - pos);
+    vec3 E2 = normalize(-pos);
+    vec3 H2 = normalize(L2 + E2);
+    // Transform vertex normal into eye coordinates
+    vec3 N = normalize(( M_model * vNormal).xyz);
+    // Compute terms in the illumination equation
+    vec4 ambient = ambientProduct;
+    float Kd = max(dot(L, N), 0.0);
+    float Kd2 = max(dot(L2, N), 0.0);
+    vec4 diffuse = Kd * diffuseProduct;
+    vec4 diffuse2 = Kd2 * diffuseProduct;
+    float Ks = pow(max(dot(N, H), 0.0), shininess);
+    float Ks2 = pow(max(dot(N, H2), 0.0), shininess);
+    vec4 specular = Ks * specularProduct;
+    vec4 specular2 = Ks2 * specularProduct;
+    if (dot(L, N) < 0.0) {
+    specular = vec4(0.0, 0.0, 0.0, 1.0);
+    }
+    fColor = ambient + diffuse + specular + diffuse2 + specular2;
+    fColor.a = 1.0;
+
+    gl_Position = M_ortho *M_persp * M_camera * M_model * vPosition;
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+
+precision mediump float;
+
+// vertex color coming from vertex shader
+varying vec4 fColor;
+
+void main() {
+    gl_FragColor = fColor;
+}
+
+</script>
+
+<script type="text/javascript" src="../Common_Files/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common_Files/initShaders.js"></script>
+<script type="text/javascript" src="../Common_Files/MV.js"></script>
+<script type="text/javascript" src="./matrix.js"></script>
+<script type="text/javascript" src="./lab5a.js"></script>
+<script type="text/javascript" src="./utilities.js"></script>
+</head>   
+
+<body>
+<canvas id="gl-canvas" width="1024" height="512">
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+</body>
+
+<form>
+
+        <label for="xangle">Model X Angle:</label><br>
+        <input type="text" id="xangle" name="xangle" value="0"><br>
+        <label for="yangle">Model Y Angle:</label><br>
+        <input type="text" id="yangle" name="yangle" value="0"><br>
+        <label for="zangle">Model Z Angle:</label><br>
+        <input type="text" id="zangle" name="zangle" value="0"><br>
+        <label for="yangle">Camera Y Angle:</label><br>
+        <input type="text" id="cyangle" name="cyangle" value="0"><br>
+        <label for="zangle">Camera Z Angle:</label><br>
+        <input type="text" id="czangle" name="czangle" value="0"><br>
+        <button type="button" id="roll">Roll</button>
+        <button type="button" id="spin">Spin</button>
+        <button type="button" id="cyspin">Rotate Camera Y</button>
+        <button type="button" id="czspin">Rotate Camera Z</button>
+        <button type="button" id="reset">Reset</button>
+</form> 
+
+<div class="slidecontainer">
+    <input type="range" min=".1" max="1" value=".5" class="slider" id="zoom">
+    <label>Zoom</label>
+</div>
+
+<div class="slidecontainer">
+    <input type="range" min="0.1" max="5" value="1" class="slider" id="fov">
+    <label>FOV</label>
+</div>
+
+<div class="slidecontainer">
+    <input type="range" min="-180" max="0" value="-90" class="slider" id="theta">
+    <label>Theta</label>
+</div>
+
+<div class="slidecontainer">
+    <input type="range" min="0" max="1" value=".5" class="slider" id="ambR">
+    <label>Ambient R</label>
+</div>
+
+<div class="slidecontainer">
+    <input type="range" min="0" max="1" value=".5" class="slider" id="ambG">
+    <label>Ambient G</label>
+</div>
+
+<div class="slidecontainer">
+    <input type="range" min="0" max="1" value=".5" class="slider" id="ambB">
+    <label>Ambient B</label>
+</div>
+
+<div class="slidecontainer">
+    <input type="range" min="0" max="1" value=".5" class="slider" id="difR">
+    <label>Diffuse R</label>
+</div>
+
+<div class="slidecontainer">
+    <input type="range" min="0" max="1" value=".5" class="slider" id="difG">
+    <label>Diffuse G</label>
+</div>
+
+<div class="slidecontainer">
+    <input type="range" min="0" max="1" value=".5" class="slider" id="difB">
+    <label>Diffuse B</label>
+</div>
+
+<div class="slidecontainer">
+    <input type="range" min="0" max="1" value=".5" class="slider" id="specR">
+    <label>Specular R</label>
+</div>
+
+<div class="slidecontainer">
+    <input type="range" min="0" max="1" value=".5" class="slider" id="specG">
+    <label>Specular G</label>
+</div>
+
+<div class="slidecontainer">
+    <input type="range" min="0" max="1" value=".5" class="slider" id="specB">
+    <label>Specular B</label>
+</div>
+
+<div class="slidecontainer">
+    <input type="range" min="0" max="100" value=".5" class="slider" id="shin">
+    <label>Shininess</label>
+</div>
+
+<div class="slidecontainer">
+    <input type="range" min="-1" max="1" value=".5" class="slider" id="l1x">
+    <label>Light 1 x</label>
+</div>
+
+<div class="slidecontainer">
+    <input type="range" min="-1" max="1" value=".5" class="slider" id="l1y">
+    <label>Light 1 y</label>
+</div>
+
+<div class="slidecontainer">
+    <input type="range" min="-1" max="1" value=".5" class="slider" id="l1z">
+    <label>Light 1 z</label>
+</div>
+
+<div class="slidecontainer">
+    <input type="range" min="-1" max="1" value=".5" class="slider" id="l2x">
+    <label>Light 2 x</label>
+</div>
+
+<div class="slidecontainer">
+    <input type="range" min="-2" max="0" value=".5" class="slider" id="l2y">
+    <label>Light 2 y</label>
+</div>
+
+<div class="slidecontainer">
+    <input type="range" min="-2" max="0" value=".5" class="slider" id="l2z">
+    <label>Light 2 z</label>
+</div>
+
+</html>
