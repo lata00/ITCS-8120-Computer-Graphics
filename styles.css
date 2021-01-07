@@ -18,4 +18,11 @@ body {
     height: auto;
     margin-left: auto;
     margin-right: auto;
+    animation: example 6s infinite;
+    
+  }
+
+  @keyframes example {
+    from {filter: hue-rotate(0deg);}
+    to {filter: hue-rotate(360deg);}
   }
